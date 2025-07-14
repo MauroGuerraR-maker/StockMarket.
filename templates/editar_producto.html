@@ -161,9 +161,145 @@
         a:hover {
             text-decoration: underline;
         }
+
+        /* Fondo con figuras geométricas */
+        .background-shapes {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        }
+        
+        .shape {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(40px);
+        opacity: 0.7;
+        }
+        
+        .circle {
+        border-radius: 50%;
+        }
+        
+        .square {
+        border-radius: 10%;
+        }
+        
+        .triangle {
+        width: 0;
+        height: 0;
+        border-style: solid;
+        background: transparent !important;
+        border-radius: 0 !important;
+        }
+            /* Contenedor principal (sin cambios) */
+        .container {
+        background-color: rgba(255, 255, 255, 1);
+        padding: 40px;
+        border-radius: var(--border-radius);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        width: 90%;
+        max-width: 500px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        color: #000;
+        position: relative;
+        z-index: 1;
+        }
+    
+         h1 {
+        margin-bottom: 10px;
+        color: var(--accent-color);
+        }
+    
+        .welcome-message {
+        font-size: 1.1em;
+        color: #555;
+        margin-bottom: 25px;
+        line-height: 1.5;
+        }
+    
+        .btn {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        margin: 0;
+        font-size: 16px;
+        background-color: var(--accent-color);
+        color: #fff;
+        border: none;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: background-color 0.3s;
+        text-decoration: none;
+        }
+    
+        .btn:hover {
+        background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
+    <!-- Fondo con figuras geométricas -->
+  <div class="background-shapes" id="backgroundShapes"></div>
+  
+  <!-- Contenedor principal (sin cambios) -->
+  <div class="container">
+    <h1>StockMarket</h1>
+    <p class="welcome-message">
+      ¡Bienvenido a StockMarket! La plataforma que te permitirá manejar los inventarios de tu empresa de forma eficiente y sencilla.
+    </p>
+    <a href="/login" class="btn">Iniciar Sesión</a>
+    <a href="/register" class="btn">Registrarse</a>
+  </div>
+
+  <script>
+    // Generador de figuras geométricas para el fondo
+    document.addEventListener('DOMContentLoaded', function() {
+      const container = document.getElementById('backgroundShapes');
+      const shapes = ['circle', 'square', 'triangle'];
+      const colors = ['#7EB3FF', '#5A8FCF', '#3A6BA5', '#8AB8FE', '#4A7FC8', '#6AA0E0'];
+      
+      // Crear 15 figuras geométricas
+      for (let i = 0; i < 15; i++) {
+        const shape = document.createElement('div');
+        const shapeType = shapes[Math.floor(Math.random() * shapes.length)];
+        
+        shape.className = `shape ${shapeType}`;
+        
+        // Tamaño aleatorio
+        const size = Math.floor(Math.random() * 200) + 100;
+        
+        // Posición aleatoria
+        const posX = Math.random() * 100;
+        const posY = Math.random() * 100;
+        
+        // Color aleatorio
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        
+        // Estilos comunes
+        shape.style.width = `${size}px`;
+        shape.style.height = `${size}px`;
+        shape.style.left = `${posX}%`;
+        shape.style.top = `${posY}%`;
+        shape.style.backgroundColor = color;
+        
+        // Estilos específicos para triángulos
+        if (shapeType === 'triangle') {
+          shape.style.width = '0';
+          shape.style.height = '0';
+          shape.style.borderWidth = `0 ${size/2}px ${size}px ${size/2}px`;
+          shape.style.borderColor = `transparent transparent ${color} transparent`;
+        }
+        
+        container.appendChild(shape);
+      }
+    });
+  </script>
     <div class="container">
         <h2>Editar Producto: {{ producto.nombre }}</h2>
 
