@@ -1,0 +1,9 @@
+Flask
+pyrebase4
+firebase-admin
+Werkzeug
+python-dotenv
+gunicorn  # Necesario para ejecutar Flask en producción
+python-jose
+requests
+cloudinary

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registro - StockMarket</title>
+  <style>
+    body {
+      background-color: #2f2f2f;
+      background-image: url('https://images.unsplash.com/photo-1549887534-3ec93abae07b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .container {
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+    }
+    h2 {
+      margin-bottom: 24px;
+      color: #007bff;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .btn {
+      background-color: #007bff;
+      color: #fff;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      width: 100%;
+      cursor: pointer;
+      margin-top: 16px;
+    }
+    .btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+  <script>
+    function registrar(event) {
+      event.preventDefault();
+      alert('Cuenta creada con éxito');
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h2>Registro</h2>
+    <form action="{{ url_for('register') }}" method="POST">
+      <input type="email" name="email" placeholder="Correo electrónico" required />
+      <input type="password" name="password" placeholder="Contraseña" required />
+      <input type="text" name="perfil" placeholder="Perfil" required />
+      <button type="submit" class="btn">Registrarse</button>
+  </form>
+  </div>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Inventario - {{ perfil }}</title>
+<style>
+body {
+  background-color: #2f2f2f;
+  background-image: url('https://images.unsplash.com/photo-1549887534-3ec93abae07b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+  background-size: cover;
+  background-position: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  color: #fff;
+}
+.container {
+  background-color: rgba(255,255,255,0.95);
+  margin: 50px auto;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 900px;
+  color: #333;
+}
+h2 {
+  color: #007bff;
+  margin-bottom: 20px;
+}
+.producto {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 15px;
+  margin: 15px 0;
+  background-color: #f9f9f9;
+}
+.producto h3 {
+  margin: 0;
+  color: #007bff;
+}
+.producto p {
+  margin: 4px 0;
+}
+form {
+  margin-top: 10px;
+  display: inline-block;
+}
+input, textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+.delete-btn {
+  background-color: #dc3545;
+  margin-left: 10px;
+}
+.logout {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #6c757d;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+}
+.logout:hover {
+  background-color: #5a6268;
+}
+.flash {
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+}
+.flash-success {
+  background-color: #d4edda;
+  color: #155724;
+}
+.flash-error {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>Inventario de {{ perfil }}</h2>
+
+  <!-- Mensajes flash para éxito o error -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="flash flash-{{ category }}">
+            {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  {% if productos %}
+    {% for id, p in productos.items() %}
+      <div class="producto" style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h3>{{ p.nombre }}</h3>
+          <p><strong>Descripción:</strong> {{ p.descripcion }}</p>
+          <p><strong>Cantidad:</strong> {{ p.cantidad }}</p>
+          <p><strong>Precio:</strong> ${{ "%.2f"|format(p.precio) }}</p>
+          <form action="{{ url_for('eliminar_producto', producto_id=id) }}" method="POST" style="display:inline;">
+            <button type="submit" class="delete-btn">Eliminar</button>
+          </form>
+          <form action="{{ url_for('editar_producto', producto_id=id) }}" method="GET" style="display:inline;">
+            <button type="submit" style="background-color:#17a2b8">Editar</button>
+          </form>
+        </div>
+        {% if p.imagen_url %}
+        <div>
+          <img src="{{ p.imagen_url }}" alt="Imagen" style="max-width:150px; border-radius:8px;">
+        </div>
+        {% endif %}
+      </div>
+
+    {% endfor %}
+  {% else %}
+    <p>No hay productos registrados.</p>
+  {% endif %}
+
+  <h3>Agregar nuevo producto</h3>
+  <form method="POST" action="{{ url_for('agregar_producto') }}" enctype="multipart/form-data">
+    <input type="text" name="nombre" placeholder="Nombre del producto" required />
+    <textarea name="descripcion" placeholder="Descripción" rows="2"></textarea>
+    <input type="number" name="cantidad" placeholder="Cantidad" required />
+    <input type="number" step="0.01" name="precio" placeholder="Precio" required />
+    <input type="file" name="imagen">
+    <button type="submit">Agregar Producto</button>
+  </form>
+
+  <a class="logout" href="{{ url_for('logout') }}">Cerrar sesión</a>
+</div>
+</body>
+</html>
+

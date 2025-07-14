@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StockMarket - Inicio</title>
+  <style>
+    :root {
+      --primary-color: #e6f0ff;
+      --accent-color: #007bff;
+      --text-color: #333;
+      --border-radius: 12px;
+    }
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #2f2f2f;
+      background-image: url('https://images.unsplash.com/photo-1549887534-3ec93abae07b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background-color: rgba(255, 255, 255, 0.85);
+      padding: 40px;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+    }
+    h1 {
+      margin-bottom: 24px;
+      color: var(--accent-color);
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin: 12px 0;
+      font-size: 16px;
+      background-color: var(--accent-color);
+      color: #fff;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: background-color 0.3s;
+      text-decoration: none;
+    }
+    .btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>sss
+<body>
+  <div class="container">
+    <h1>StockMarket</h1>
+   <a href="/login" class="btn">Iniciar Sesión</a>
+   <a href="/register" class="btn">Registrarse</a>
+  </div>
+</body>
+</html>

@@ -1,0 +1,1 @@
+web: gunicorn "Sprite 1":app
