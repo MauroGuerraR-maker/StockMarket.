@@ -7,6 +7,7 @@ import cloudinary
 import cloudinary.uploader
 import logging 
 from datetime import datetime 
+from urllib.parse import unquote
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s') 
@@ -153,7 +154,7 @@ def register():
                 "representante_legal": {
                     "nombre": nombre_representante,
                     "numero_identificacion": numero_identificacion,
-                    "email": email # Store email here as well for easy retrieval
+                    "email": email
                 }
             }
 
@@ -167,8 +168,6 @@ def register():
                 except Exception as cloudinary_e:
                     logging.error(f"Cloudinary upload failed: {cloudinary_e}")
                     flash(f"Error al subir el logo: {str(cloudinary_e)}", "error")
-                    # Consider if you want to stop registration or proceed without logo
-                    # For now, we'll proceed, but the logo_url won't be saved.
 
             # Save data to Firebase Realtime Database
             logging.info(f"Saving user data to Firebase Realtime Database for UID: {uid}")
@@ -178,7 +177,7 @@ def register():
             flash("Empresa registrada correctamente. Ahora inicia sesión.", "success")
             return redirect(url_for("login"))
         except Exception as e:
-            logging.error(f"Error during registration process for {email}: {e}", exc_info=True) # exc_info=True to log traceback
+            logging.error(f"Error during registration process for {email}: {e}", exc_info=True)
             if "EMAIL_EXISTS" in str(e):
                 flash("Este correo electrónico ya está registrado.", "error")
             else:
@@ -220,9 +219,7 @@ def agregar_producto():
             "precio": float(precio)
         }
         
-        # --- INICIO MODIFICACIÓN PARA MULTIPLES IMAGENES ---
         uploaded_image_urls = []
-        # 'imagen' es el nombre del input file en el HTML, y 'multiple' permite una lista de archivos
         files = request.files.getlist('imagen') 
         
         for file in files:
@@ -235,11 +232,8 @@ def agregar_producto():
                     logging.error(f"Error uploading image to Cloudinary: {e}")
                     flash(f"Error al subir una imagen: {str(e)}", "error")
         
-        # Almacena la lista de URLs en Firebase bajo la clave 'imagenes'
-        # Si no hay imágenes subidas, la lista estará vacía, lo cual es manejado por el frontend
-        if uploaded_image_urls: # Solo guarda la clave si hay imágenes
+        if uploaded_image_urls:
             producto_data["imagenes"] = uploaded_image_urls
-        # --- FIN MODIFICACIÓN PARA MULTIPLES IMAGENES ---
         
         try:
             db.reference(f'usuarios/{uid}/productos').push(producto_data)
@@ -261,9 +255,9 @@ def eliminar_producto(producto_id):
         return redirect(url_for("login"))
     uid = session['user']['uid']
     try:
-        # Opcional: Si las imágenes antiguas necesitan ser eliminadas de Cloudinary,
-        # primero tendrías que recuperar las URLs del producto antes de eliminarlo de Firebase
-        # y luego usar cloudinary.uploader.destroy()
+        # Optional: If old images need to be deleted from Cloudinary,
+        # you would first need to retrieve the URLs of the product before deleting it from Firebase
+        # and then use cloudinary.uploader.destroy()
         
         db.reference(f'usuarios/{uid}/productos/{producto_id}').delete()
         logging.info(f"Product '{producto_id}' deleted for UID: {uid}.")
@@ -281,22 +275,18 @@ def editar_producto(producto_id):
     uid = session['user']['uid']
     producto_ref = db.reference(f'usuarios/{uid}/productos/{producto_id}')
     
-    # --- INICIO CORRECCIÓN PARA AttributeError: 'dict' object has no attribute 'val' ---
     producto_data_snapshot = producto_ref.get()
-    # Verifica si producto_data_snapshot es un objeto que tiene el método .val() (como podría ser un DataSnapshot de Pyrebase)
-    # o si ya es un diccionario (como lo es con Firebase Admin SDK)
+    
     if hasattr(producto_data_snapshot, 'val'):
         producto = producto_data_snapshot.val()
     else:
-        producto = producto_data_snapshot # Ya es un diccionario
-    # --- FIN CORRECCIÓN ---
+        producto = producto_data_snapshot
 
     if not producto:
         flash("Producto no encontrado.", "error")
         return redirect(url_for("inventario"))
 
     if request.method == 'POST':
-        # Recopilar los datos del formulario (excepto las imágenes por ahora)
         nombre = request.form.get('nombre')
         descripcion = request.form.get('descripcion')
         cantidad = request.form.get('cantidad')
@@ -309,33 +299,46 @@ def editar_producto(producto_id):
                 "cantidad": int(cantidad),
                 "precio": float(precio)
             }
-
-            # --- INICIO MODIFICACIÓN PARA MULTIPLES IMAGENES EN EDICIÓN ---
-            files = request.files.getlist('imagen') # Obtener todos los archivos subidos
-            new_image_urls = []
             
-            has_new_files = False
+            # Get current images (regardless of single imagen_url or multiple imagenes)
+            current_images_list = []
+            if producto and 'imagenes' in producto and producto['imagenes']:
+                current_images_list = list(producto['imagenes']) # Ensure it's a mutable list
+            elif producto and 'imagen_url' in producto and producto['imagen_url']:
+                current_images_list = [producto['imagen_url']]
+
+            # Handle new image uploads - these are ADDED, not replaced.
+            files = request.files.getlist('imagen')
+            new_uploaded_image_urls = []
             for file in files:
                 if file and file.filename != '':
-                    has_new_files = True
                     try:
                         upload_result = cloudinary.uploader.upload(file)
-                        new_image_urls.append(upload_result['secure_url'])
+                        new_uploaded_image_urls.append(upload_result['secure_url'])
                         logging.info(f"New image uploaded for product '{producto_id}': {upload_result['secure_url']}")
                     except Exception as e:
                         logging.error(f"Error uploading new image for product '{producto_id}': {e}")
                         flash(f"Error al subir una de las nuevas imágenes: {str(e)}", "error")
             
-            if has_new_files:
-                # Si se subieron nuevas imágenes, reemplaza todas las imágenes existentes con las nuevas
-                data_update["imagenes"] = new_image_urls
-                # Si el producto tenía una sola 'imagen_url' antigua, la eliminamos para evitar duplicidades/conflictos
-                if "imagen_url" in producto and producto["imagen_url"]:
-                    data_update["imagen_url"] = None # Establece a None para que se elimine en Firebase
-                    logging.info(f"Marked old 'imagen_url' for removal for product '{producto_id}' as new images were uploaded.")
-            # Si no se suben nuevos archivos, no modificamos las claves 'imagenes' o 'imagen_url' en data_update.
-            # Esto asegura que las imágenes existentes en Firebase (ya sea 'imagen_url' o 'imagenes') se conserven.
-            # --- FIN MODIFICACIÓN PARA MULTIPLES IMAGENES EN EDICIÓN ---
+            # Combine existing images with newly uploaded images
+            # Images are only removed via the new /eliminar_imagen_producto route
+            final_image_list = current_images_list + new_uploaded_image_urls
+            
+            # Update 'imagenes' in data_update
+            if final_image_list:
+                data_update["imagenes"] = final_image_list
+                # If 'imagen_url' exists, ensure it's removed if 'imagenes' is being used
+                if "imagen_url" in producto:
+                    data_update["imagen_url"] = None
+            else:
+                # If no images remain (all deleted via AJAX and no new ones uploaded), remove the 'imagenes' key
+                # and also ensure 'imagen_url' is removed.
+                # This state would only be reached if the user deleted all images AND did not upload new ones.
+                if "imagenes" in producto:
+                    data_update["imagenes"] = None
+                if "imagen_url" in producto:
+                    data_update["imagen_url"] = None
+
 
             try:
                 producto_ref.update(data_update)
@@ -349,14 +352,66 @@ def editar_producto(producto_id):
             logging.warning(f"Invalid data for product update '{producto_id}' for UID: {uid}. Data: {request.form}")
             flash("Datos inválidos.", "error")
     
-    # Para la solicitud GET, o si POST falla
     return render_template("editar_producto.html", producto=producto, producto_id=producto_id)
 
-# --- NUEVA RUTA PARA ACTUALIZAR LA CANTIDAD DEL PRODUCTO VÍA AJAX ---
+@app.route('/eliminar_imagen_producto/<producto_id>/<path:image_url_encoded>', methods=['POST'])
+def eliminar_imagen_producto(producto_id, image_url_encoded):
+    if 'user' not in session:
+        return jsonify({'success': False, 'message': 'Necesitas iniciar sesión.'}), 401
+
+    uid = session['user']['uid']
+    producto_ref = db.reference(f'usuarios/{uid}/productos/{producto_id}')
+    
+    # Decode the URL to get the original image URL
+    image_url_to_delete = unquote(image_url_encoded)
+    logging.info(f"Attempting to delete image: {image_url_to_delete} for product {producto_id}")
+
+    try:
+        producto = producto_ref.get()
+        if not producto:
+            return jsonify({'success': False, 'message': 'Producto no encontrado.'}), 404
+
+        current_images = []
+        if 'imagenes' in producto and producto['imagenes']:
+            current_images = list(producto['imagenes'])
+        elif 'imagen_url' in producto and producto['imagen_url']:
+            current_images = [producto['imagen_url']]
+
+        if image_url_to_delete in current_images:
+            current_images.remove(image_url_to_delete)
+            
+            # Optional: Delete image from Cloudinary
+            try:
+                public_id = image_url_to_delete.split('/')[-1].split('.')[0]
+                cloudinary.uploader.destroy(public_id)
+                logging.info(f"Deleted image from Cloudinary: {public_id}")
+            except Exception as e:
+                logging.error(f"Error deleting image from Cloudinary ({image_url_to_delete}): {e}")
+                # Don't fail the entire request if Cloudinary deletion fails, just log it.
+
+            # Update Firebase
+            if current_images:
+                producto_ref.update({'imagenes': current_images})
+                # If 'imagen_url' existed, ensure it's removed if 'imagenes' is now in use
+                if 'imagen_url' in producto:
+                    producto_ref.update({'imagen_url': None})
+            else:
+                # If no images left, remove both 'imagenes' and 'imagen_url' keys
+                producto_ref.update({'imagenes': None, 'imagen_url': None})
+
+            logging.info(f"Image '{image_url_to_delete}' deleted for product '{producto_id}'.")
+            return jsonify({'success': True, 'message': 'Imagen eliminada correctamente.'})
+        else:
+            return jsonify({'success': False, 'message': 'La imagen no se encontró en el producto.'}), 404
+
+    except Exception as e:
+        logging.error(f"Error deleting image for product '{producto_id}': {e}")
+        return jsonify({'success': False, 'message': f'Error interno del servidor: {str(e)}'}), 500
+
 @app.route('/actualizar_cantidad_producto/<producto_id>', methods=['POST'])
 def actualizar_cantidad_producto(producto_id):
     if 'user' not in session:
-        return jsonify({'success': False, 'message': 'Necesitas iniciar sesión.'}), 401 # Unauthorized
+        return jsonify({'success': False, 'message': 'Necesitas iniciar sesión.'}), 401
 
     uid = session['user']['uid']
     producto_ref = db.reference(f'usuarios/{uid}/productos/{producto_id}')
@@ -368,7 +423,6 @@ def actualizar_cantidad_producto(producto_id):
         if new_quantity < 0:
             return jsonify({'success': False, 'message': 'La cantidad no puede ser negativa.'}), 400
 
-        # Optional: Get current product data to ensure it exists before updating
         current_product = producto_ref.get()
         if not current_product:
             return jsonify({'success': False, 'message': 'Producto no encontrado.'}), 404
@@ -393,3 +447,4 @@ def logout():
 # -------------------- MAIN --------------------
 if __name__ == "__main__":
     app.run(debug=True)
+    

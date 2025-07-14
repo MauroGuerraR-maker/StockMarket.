@@ -114,10 +114,38 @@
             color: #721c24;
         }
 
-        .imagen-actual img {
-            max-width: 100%;
-            border-radius: 8px;
-            margin-top: 10px;
+        .imagen-actual {
+            margin-bottom: 15px;
+        }
+
+        .imagen-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            border: 1px solid #eee;
+            padding: 8px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        .imagen-item img {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 5px;
+            margin-right: 10px;
+            object-fit: cover;
+        }
+
+        .imagen-item button {
+            width: auto;
+            margin-left: auto; /* Push button to the right */
+            padding: 6px 12px;
+            font-size: 14px;
+            background-color: #dc3545; /* Red for delete button */
+        }
+
+        .imagen-item button:hover {
+            background-color: #c82333;
         }
 
         a {
@@ -149,7 +177,7 @@
             {% endif %}
         {% endwith %}
 
-        <form method="POST" enctype="multipart/form-data">
+        <form method="POST" enctype="multipart/form-data" id="editProductForm">
             <label for="nombre">Nombre:</label>
             <input type="text" id="nombre" name="nombre" value="{{ producto.nombre }}" required />
 
@@ -162,18 +190,30 @@
             <label for="precio">Precio:</label>
             <input type="number" step="0.01" id="precio" name="precio" value="{{ producto.precio }}" required />
 
-            <label for="imagen">Subir nuevas imágenes (opcional - reemplazarán las existentes):</label>
+            <label for="imagen">Subir nuevas imágenes (opcional):</label>
             <input type="file" id="imagen" name="imagen" multiple/>
+            <p style="font-size: 0.85em; color: #666;">*Las nuevas imágenes se añadirán a las existentes. Para eliminar imágenes, haga clic en el botón "Eliminar" al lado de cada imagen.</p>
 
-            {# Construye la lista de imágenes a mostrar #}
-            {% set all_product_images = producto.imagenes if producto.imagenes is defined and producto.imagenes else ([producto.imagen_url] if producto.imagen_url is defined and producto.imagen_url else []) %}
+            {% set all_product_images = [] %}
+            {# Check for 'imagenes' list first #}
+            {% if producto.imagenes is defined and producto.imagenes is not none and producto.imagenes is iterable and producto.imagenes|length > 0 %}
+                {% set all_product_images = producto.imagenes %}
+            {# Fallback to single 'imagen_url' if 'imagenes' is not present or empty #}
+            {% elif producto.imagen_url is defined and producto.imagen_url is not none and producto.imagen_url|length > 0 %}
+                {% set all_product_images = [producto.imagen_url] %}
+            {% endif %}
+
             {% if all_product_images %}
                 <div class="imagen-actual">
                     <label>Imágenes actuales:</label>
-                    {% for img_url in all_product_images %}
-                        <img src="{{ img_url }}" alt="Imagen actual {{ loop.index }}" style="max-width: 150px; margin-right: 10px; margin-bottom: 10px;">
-                    {% endfor %}
-                    <p style="font-size: 0.85em; color: #666;">*Al subir nuevas imágenes, estas reemplazarán las actuales.</p>
+                    <div id="currentImagesList">
+                        {% for img_url in all_product_images %}
+                            <div class="imagen-item" data-image-url="{{ img_url }}">
+                                <img src="{{ img_url }}" alt="Imagen actual {{ loop.index }}">
+                                <button type="button" class="delete-image-btn" data-image-url="{{ img_url }}">Eliminar</button>
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
             {% endif %}
 
@@ -203,6 +243,46 @@
                         message.remove();
                     });
                 }, 3000);
+            });
+
+            // --- Lógica para eliminar imágenes con botón (AJAX) ---
+            document.getElementById('currentImagesList').addEventListener('click', function(event) {
+                if (event.target.classList.contains('delete-image-btn')) {
+                    const button = event.target;
+                    const imageUrlToDelete = button.dataset.imageUrl;
+                    const productId = "{{ producto_id }}"; // Get product ID from Flask context
+
+                    if (confirm('¿Estás seguro de que quieres eliminar esta imagen?')) {
+                        // URL encode the image URL because it can contain special characters
+                        const encodedImageUrl = encodeURIComponent(imageUrlToDelete);
+                        
+                        fetch(`/eliminar_imagen_producto/${productId}/${encodedImageUrl}`, {
+                            method: 'POST', // Use POST for deletion as it changes server state
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            // No body needed for simple deletion by URL
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert(data.message);
+                                // Remove the image item from the DOM
+                                button.closest('.imagen-item').remove();
+                                // Optional: If all images are deleted, hide the "Imágenes actuales" section
+                                if (document.querySelectorAll('.imagen-item').length === 0) {
+                                    document.querySelector('.imagen-actual').style.display = 'none';
+                                }
+                            } else {
+                                alert('Error al eliminar la imagen: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error de conexión al eliminar la imagen.');
+                        });
+                    }
+                }
             });
         });
     </script>
