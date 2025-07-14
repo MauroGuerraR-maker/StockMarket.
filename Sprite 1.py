@@ -33,23 +33,38 @@ firebase = pyrebase.initialize_app(firebase_config)
 pyre_auth = firebase.auth()
 
 # Inicializamos Admin SDK para la base de datos
-# AHORA LEEREMOS DE VARIABLES DE ENTORNO EN LUGAR DEL ARCHIVO JSON
 try:
-    # Asegúrate de que FIREBASE_PRIVATE_KEY tenga los saltos de línea correctos (\n)
-    private_key = os.environ.get('FIREBASE_PRIVATE_KEY').replace('\\n', '\n')
-    cred = credentials.Certificate({
-        "type": os.environ.get('FIREBASE_TYPE'),
-        "project_id": os.environ.get('FIREBASE_PROJECT_ID'),
-        "private_key_id": os.environ.get('FIREBASE_PRIVATE_KEY_ID'),
-        "private_key": private_key,
-        "client_email": os.environ.get('FIREBASE_CLIENT_EMAIL'),
-        "client_id": os.environ.get('FIREBASE_CLIENT_ID'),
-        "auth_uri": os.environ.get('FIREBASE_AUTH_URI'),
-        "token_uri": os.environ.get('FIREBASE_TOKEN_URI'),
-        "auth_provider_x509_cert_url": os.environ.get('FIREBASE_AUTH_PROVIDER_X509_CERT_URL'),
-        "client_x509_cert_url": os.environ.get('FIREBASE_CLIENT_X509_CERT_URL'),
-        "universe_domain": os.environ.get('FIREBASE_UNIVERSE_DOMAIN', 'googleapis.com') # A veces esto es opcional o tiene un valor predeterminado
-    })
+    # Asegúrate de que FIREBASE_ADMIN_PRIVATE_KEY (o el nombre que uses) tenga los saltos de línea correctos (\n)
+    private_key_value = os.environ.get('FIREBASE_ADMIN_PRIVATE_KEY', '').replace('\\n', '\n') # Nombres consistentes
+
+    # Crea el diccionario de credenciales a partir de las variables de entorno
+    admin_credentials_data = {
+        "type": os.environ.get('FIREBASE_ADMIN_TYPE'), # Nombres consistentes
+        "project_id": os.environ.get('FIREBASE_ADMIN_PROJECT_ID'), # Nombres consistentes
+        "private_key_id": os.environ.get('FIREBASE_ADMIN_PRIVATE_KEY_ID'), # Nombres consistentes
+        "private_key": private_key_value,
+        "client_email": os.environ.get('FIREBASE_ADMIN_CLIENT_EMAIL'), # Nombres consistentes
+        "client_id": os.environ.get('FIREBASE_ADMIN_CLIENT_ID'), # Nombres consistentes
+        "auth_uri": os.environ.get('FIREBASE_ADMIN_AUTH_URI'), # Nombres consistentes
+        "token_uri": os.environ.get('FIREBASE_ADMIN_TOKEN_URI'), # Nombres consistentes
+        "auth_provider_x509_cert_url": os.environ.get('FIREBASE_ADMIN_AUTH_PROVIDER_X509_CERT_URL'), # Nombres consistentes
+        "client_x509_cert_url": os.environ.get('FIREBASE_ADMIN_CLIENT_X509_CERT_URL'), # Nombres consistentes
+        "universe_domain": os.environ.get('FIREBASE_ADMIN_UNIVERSE_DOMAIN', 'googleapis.com')
+    }
+
+    # **AÑADE ESTA VALIDACIÓN:**
+    # Verifica que todas las variables esenciales para el Admin SDK no sean None o cadenas vacías
+    required_admin_keys = [
+        "type", "project_id", "private_key_id", "private_key",
+        "client_email", "client_id", "auth_uri", "token_uri",
+        "auth_provider_x509_cert_url", "client_x509_cert_url"
+    ]
+    for key in required_admin_keys:
+        if not admin_credentials_data.get(key):
+            raise ValueError(f"La variable de entorno FIREBASE_ADMIN_{key.upper()} no está configurada o está vacía.")
+
+
+    cred = credentials.Certificate(admin_credentials_data)
 
     if not firebase_admin._apps:
         firebase_admin.initialize_app(cred, {
@@ -57,16 +72,10 @@ try:
         })
     print("Firebase Admin SDK inicializado correctamente desde variables de entorno.")
 except Exception as e:
-    print(f"ERROR: No se pudo inicializar Firebase Admin SDK desde variables de entorno. Asegúrate de que todas las variables de entorno de Firebase Admin estén configuradas correctamente: {e}")
-    # Opcional: Si quieres que la aplicación falle si no se puede inicializar Firebase
-    # import sys
-    # sys.exit(1)
-
-
-if not firebase_admin._apps:
-    firebase_admin.initialize_app(cred, {
-        "databaseURL": firebase_config["databaseURL"]
-    })
+    print(f"ERROR: No se pudo inicializar Firebase Admin SDK desde variables de entorno. Asegúrate de que todas las variables de entorno de Firebase Admin estén configuradas correctamente. Error: {e}")
+    # Si no se puede inicializar Firebase Admin, la aplicación no debería funcionar
+    import sys
+    sys.exit(1) # <-- Esto detendrá el despliegue si hay un problema
 
 # -------------------- RUTAS FLASK --------------------
 @app.route('/')
