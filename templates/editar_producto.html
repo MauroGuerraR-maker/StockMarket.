@@ -1,95 +1,210 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<title>Editar Producto</title>
-<style>
-body {
-    font-family: Arial, sans-serif;
-    background-color: #2f2f2f;
-    background-image: url('https://images.unsplash.com/photo-1549887534-3ec93abae07b?fit=crop&w=1920&q=80');
-    background-size: cover;
-    color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height:100vh;
-}
-.container {
-    background-color: rgba(255, 255, 255, 0.95);
-    padding: 30px;
-    border-radius: 12px;
-    color: #333;
-    max-width: 500px;
-    width:100%;
-}
-h2 {
-    color: #007bff;
-}
-input, textarea {
-    width:100%;
-    padding:10px;
-    margin:8px 0;
-    border-radius:6px;
-    border:1px solid #ccc;
-    resize: vertical;
-}
-button {
-    padding:10px 20px;
-    background-color: #007bff;
-    color:white;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-}
-button:hover {
-    background-color:#0056b3;
-}
-.flash {
-    padding:10px;
-    margin:10px 0;
-    border-radius:5px;
-}
-.flash-success {
-    background-color:#d4edda;
-    color:#155724;
-}
-.flash-error {
-    background-color:#f8d7da;
-    color:#721c24;
-}
-</style>
+    <meta charset="UTF-8" />
+    <title>Editar Producto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ADD8E6;
+            background-image: none;
+            background-size: cover;
+            background-position: center;
+            color: #333;
+            margin: 0;
+            min-height: 100vh;
+            padding: 40px 20px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.97);
+            padding: 30px 40px;
+            border-radius: 15px;
+            color: #333;
+            max-width: 550px;
+            width: 100%;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            font-family: Arial, sans-serif;
+        }
+
+        h2 {
+            color: #007bff;
+            margin-bottom: 25px;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 12px;
+            display: block;
+            font-family: Arial, sans-serif;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 15px;
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+        }
+
+        /* Eliminar flechas de los input type="number" */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            overflow: hidden;
+        }
+
+        button {
+            padding: 12px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 10px;
+            font-family: Arial, sans-serif;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .flash {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .flash.hidden {
+            opacity: 0;
+        }
+
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .flash-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .imagen-actual img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        a {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-    <h2>Editar Producto: {{ producto.nombre }}</h2>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="flash flash-{{ category }}">
-                    {{ message }}
+    <div class="container">
+        <h2>Editar Producto: {{ producto.nombre }}</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" enctype="multipart/form-data">
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" value="{{ producto.nombre }}" required />
+
+            <label for="descripcion">Descripción:</label>
+            <textarea id="descripcion" name="descripcion" required>{{ producto.descripcion }}</textarea>
+
+            <label for="cantidad">Cantidad:</label>
+            <input type="number" id="cantidad" name="cantidad" value="{{ producto.cantidad }}" required />
+
+            <label for="precio">Precio:</label>
+            <input type="number" step="0.01" id="precio" name="precio" value="{{ producto.precio }}" required />
+
+            <label for="imagen">Subir nuevas imágenes (opcional - reemplazarán las existentes):</label>
+            <input type="file" id="imagen" name="imagen" multiple/>
+
+            {# Construye la lista de imágenes a mostrar #}
+            {% set all_product_images = producto.imagenes if producto.imagenes is defined and producto.imagenes else ([producto.imagen_url] if producto.imagen_url is defined and producto.imagen_url else []) %}
+            {% if all_product_images %}
+                <div class="imagen-actual">
+                    <label>Imágenes actuales:</label>
+                    {% for img_url in all_product_images %}
+                        <img src="{{ img_url }}" alt="Imagen actual {{ loop.index }}" style="max-width: 150px; margin-right: 10px; margin-bottom: 10px;">
+                    {% endfor %}
+                    <p style="font-size: 0.85em; color: #666;">*Al subir nuevas imágenes, estas reemplazarán las actuales.</p>
                 </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+            {% endif %}
 
-    <!-- IMPORTANTE: enctype="multipart/form-data" -->
-    <form method="POST" enctype="multipart/form-data">
-        <input type="text" name="nombre" value="{{ producto.nombre }}" required />
-        <textarea name="descripcion" required>{{ producto.descripcion }}</textarea>
-        <input type="number" name="cantidad" value="{{ producto.cantidad }}" required />
-        <input type="number" step="0.01" name="precio" value="{{ producto.precio }}" required />
-        <label>Imagen (opcional):</label>
-        <input type="file" name="imagen" />
-        {% if producto.imagen_url %}
-            <p><img src="{{ producto.imagen_url }}" alt="Imagen actual" style="max-width:200px; border-radius:6px;"></p>
-        {% endif %}
-        <button type="submit">Guardar Cambios</button>
-    </form>
+            <button type="submit">Guardar Cambios</button>
+        </form>
 
-    <a href="{{ url_for('inventario') }}" style="display:block;margin:15px 0;text-align:center;">
-        ← Volver al inventario
-    </a>
-</div>
+        <a href="{{ url_for('inventario') }}">← Volver al inventario</a>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const textareas = document.querySelectorAll("textarea");
+            textareas.forEach(textarea => {
+                textarea.style.height = textarea.scrollHeight + "px";
+                textarea.addEventListener("input", () => {
+                    textarea.style.height = "auto";
+                    textarea.style.height = textarea.scrollHeight + "px";
+                });
+            });
+
+            // Script para desvanecer mensajes flash
+            const flashMessages = document.querySelectorAll('.flash');
+            flashMessages.forEach(message => {
+                setTimeout(() => {
+                    message.classList.add('hidden');
+                    message.addEventListener('transitionend', () => {
+                        message.remove();
+                    });
+                }, 3000);
+            });
+        });
+    </script>
 </body>
 </html>

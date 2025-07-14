@@ -3,38 +3,46 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login - StockMarket</title>
+  <title>Iniciar Sesión - StockMarket</title>
   <style>
     body {
-      background-color: #2f2f2f;
-      background-image: url('https://images.unsplash.com/photo-1549887534-3ec93abae07b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+      background-color: #ADD8E6; /* Fondo azul claro consistente */
+      background-image: none; /* Eliminar imagen de fondo si había alguna */
       background-size: cover;
       background-position: center;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Consistente */
+      font-size: 16px; /* Tamaño de fuente base */
+      padding: 20px;
+      box-sizing: border-box;
     }
     .container {
-      background-color: rgba(255, 255, 255, 0.9);
+      background-color: rgba(255, 255, 255, 1); /* Fondo blanco sólido para el contenedor */
       padding: 40px;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       text-align: center;
       width: 90%;
       max-width: 400px;
+      color: #000; /* Texto negro dentro del contenedor */
     }
     h2 {
       margin-bottom: 24px;
       color: #007bff;
+      font-size: 2em; /* Proporcional */
     }
-    input {
+    input[type="email"],
+    input[type="password"] {
       width: 100%;
       padding: 10px;
       margin: 10px 0;
       border-radius: 8px;
       border: 1px solid #ccc;
+      box-sizing: border-box; /* Incluye padding en el ancho */
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Asegurar que hereda la fuente */
     }
     .btn {
       background-color: #007bff;
@@ -45,20 +53,66 @@
       width: 100%;
       cursor: pointer;
       margin-top: 16px;
+      transition: background-color 0.3s;
+      font-size: 1.05em; /* Proporcional */
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Asegurar que hereda la fuente */
     }
     .btn:hover {
       background-color: #0056b3;
+    }
+    .register-link { /* Estilos para el nuevo enlace */
+        margin-top: 20px;
+        font-size: 0.9em; /* Proporcional */
+    }
+    .register-link a {
+        color: #007bff;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    .register-link a:hover {
+        text-decoration: underline;
+    }
+    /* Styles for flash messages */
+    .flash-message {
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        font-weight: bold;
+        text-align: center;
+        font-size: 0.9em; /* Proporcional */
+    }
+    .flash-message.error {
+        background-color: #f8d7da; /* Light red */
+        color: #721c24; /* Dark red */
+        border: 1px solid #f5c6cb;
+    }
+    .flash-message.success {
+        background-color: #d4edda; /* Light green */
+        color: #155724; /* Dark green */
+        border: 1px solid #c3e6cb;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Iniciar Sesión</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash-message {{ category }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
     <form action="{{ url_for('login') }}" method="POST">
       <input type="email" name="email" placeholder="Correo electrónico" required />
       <input type="password" name="password" placeholder="Contraseña" required />
-      <button type="submit" class="btn">Entrar</button>
-  </form>
+      <button type="submit" class="btn">Iniciar Sesión</button>
+    </form>
+    <div class="register-link">
+      ¿No tienes una cuenta? <a href="{{ url_for('register') }}">Regístrate <strong>aquí</strong></a>
+    </div>
   </div>
 </body>
 </html>
