@@ -33,29 +33,34 @@ firebase = pyrebase.initialize_app(firebase_config)
 pyre_auth = firebase.auth()
 
 # Inicializamos Admin SDK para la base de datos
-# Make sure stockmarket-testbase.json is in the same directory as Sprite 1.py
-# For Render, you'll need to base64 encode this or store as a secret file if possible.
-# A simpler approach for the Firebase Admin SDK is to use environment variables for the credentials.
-# However, for a quick deployment, ensure stockmarket-testbase.json is in your root directory.
+# AHORA LEEREMOS DE VARIABLES DE ENTORNO EN LUGAR DEL ARCHIVO JSON
+try:
+    # Asegúrate de que FIREBASE_PRIVATE_KEY tenga los saltos de línea correctos (\n)
+    private_key = os.environ.get('FIREBASE_PRIVATE_KEY').replace('\\n', '\n')
+    cred = credentials.Certificate({
+        "type": os.environ.get('FIREBASE_TYPE'),
+        "project_id": os.environ.get('FIREBASE_PROJECT_ID'),
+        "private_key_id": os.environ.get('FIREBASE_PRIVATE_KEY_ID'),
+        "private_key": private_key,
+        "client_email": os.environ.get('FIREBASE_CLIENT_EMAIL'),
+        "client_id": os.environ.get('FIREBASE_CLIENT_ID'),
+        "auth_uri": os.environ.get('FIREBASE_AUTH_URI'),
+        "token_uri": os.environ.get('FIREBASE_TOKEN_URI'),
+        "auth_provider_x509_cert_url": os.environ.get('FIREBASE_AUTH_PROVIDER_X509_CERT_URL'),
+        "client_x509_cert_url": os.environ.get('FIREBASE_CLIENT_X509_CERT_URL'),
+        "universe_domain": os.environ.get('FIREBASE_UNIVERSE_DOMAIN', 'googleapis.com') # A veces esto es opcional o tiene un valor predeterminado
+    })
 
-# Option 1: Using the JSON file (needs to be in the deployed directory)
-cred = credentials.Certificate("stockmarket-testbase.json")
-
-# Option 2: (More secure for production) Use environment variables for service account
-# private_key = os.environ.get('FIREBASE_PRIVATE_KEY').replace('\\n', '\n')
-# cred = credentials.Certificate({
-#     "type": os.environ.get('FIREBASE_TYPE'),
-#     "project_id": os.environ.get('FIREBASE_PROJECT_ID'),
-#     "private_key_id": os.environ.get('FIREBASE_PRIVATE_KEY_ID'),
-#     "private_key": private_key,
-#     "client_email": os.environ.get('FIREBASE_CLIENT_EMAIL'),
-#     "client_id": os.environ.get('FIREBASE_CLIENT_ID'),
-#     "auth_uri": os.environ.get('FIREBASE_AUTH_URI'),
-#     "token_uri": os.environ.get('FIREBASE_TOKEN_URI'),
-#     "auth_provider_x509_cert_url": os.environ.get('FIREBASE_AUTH_PROVIDER_X509_CERT_URL'),
-#     "client_x509_cert_url": os.environ.get('FIREBASE_CLIENT_X509_CERT_URL'),
-#     "universe_domain": os.environ.get('FIREBASE_UNIVERSE_DOMAIN')
-# })
+    if not firebase_admin._apps:
+        firebase_admin.initialize_app(cred, {
+            "databaseURL": firebase_config["databaseURL"]
+        })
+    print("Firebase Admin SDK inicializado correctamente desde variables de entorno.")
+except Exception as e:
+    print(f"ERROR: No se pudo inicializar Firebase Admin SDK desde variables de entorno. Asegúrate de que todas las variables de entorno de Firebase Admin estén configuradas correctamente: {e}")
+    # Opcional: Si quieres que la aplicación falle si no se puede inicializar Firebase
+    # import sys
+    # sys.exit(1)
 
 
 if not firebase_admin._apps:
