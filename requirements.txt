@@ -3,7 +3,10 @@ pyrebase4
 firebase-admin
 Werkzeug
 python-dotenv
-gunicorn  # Necesario para ejecutar Flask en producción
+gunicorn
 python-jose
 requests
 cloudinary
+# Añade estas líneas para asegurar la compatibilidad:
+setuptools>=65.5.1 # Asegura una versión reciente de setuptools
+pip>=23.0 # Asegura una versión reciente de pip
