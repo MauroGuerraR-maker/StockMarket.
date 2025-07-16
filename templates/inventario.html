@@ -110,13 +110,16 @@ body {
   font-size: 0.95em;
   transition: background-color 0.3s ease;
   font-family: inherit;
+  /* Añadido para el botón de editar empresa */
+  margin-left: 10px; /* Para separar los botones del header */
 }
 
 .toggle-form-btn:hover {
   background-color: #0056b3;
 }
 
-.add-product-form-container {
+.add-product-form-container,
+.edit-company-form-container { /* Estilo para ambos contenedores de formulario */
   display: none;
   border: 1px solid #e0e0e0;
   padding: 20px;
@@ -126,7 +129,8 @@ body {
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-.add-product-form-container h3 {
+.add-product-form-container h3,
+.edit-company-form-container h3 {
     margin-top: 0;
     margin-bottom: 15px;
 }
@@ -318,7 +322,10 @@ button {
 <div class="container">
   <div class="header-main">
     <h2>Inventario de {{ perfil }}</h2>
-    <button id="toggleAddProductForm" class="toggle-form-btn">Añadir Nuevo Producto</button>
+    <div>
+      <button id="toggleAddProductForm" class="toggle-form-btn">Añadir Nuevo Producto</button>
+      <button id="toggleEditCompanyForm" class="toggle-form-btn" style="background-color: #17a2b8;">Editar Información de la Empresa</button>
+    </div>
   </div>
 
   <div class="company-info">
@@ -370,6 +377,28 @@ button {
     </form>
   </div>
 
+  <div id="editCompanyFormContainer" class="edit-company-form-container">
+    <h3>Editar Información de la Empresa</h3>
+    <form method="POST" action="{{ url_for('editar_empresa') }}" enctype="multipart/form-data">
+      <label for="edit_nombre_empresa">Nombre de la Empresa:</label>
+      <input type="text" name="nombre_empresa" id="edit_nombre_empresa" value="{{ empresa_info.nombre_empresa }}" required />
+
+      <label for="edit_nit">NIT:</label>
+      <input type="text" name="nit" id="edit_nit" value="{{ empresa_info.nit }}" required />
+
+      <label for="edit_numero_contacto">Número de Contacto:</label>
+      <input type="text" name="numero_contacto" id="edit_numero_contacto" value="{{ empresa_info.numero_contacto }}" required />
+
+      <label for="edit_direccion">Dirección:</label>
+      <input type="text" name="direccion" id="edit_direccion" value="{{ empresa_info.direccion }}" required />
+
+      <label for="edit_logo_empresa">Actualizar Logo de la Empresa (opcional):</label>
+      <input type="file" name="logo_empresa" id="edit_logo_empresa" accept="image/*">
+      
+      <button type="submit">Guardar Cambios</button>
+      <button type="button" id="closeEditCompanyForm" style="background-color: #6c757d; margin-left: 10px;">Cerrar</button>
+    </form>
+  </div>
   <h3>Productos Registrados</h3>
 
   <div class="search-bar-container">
@@ -434,24 +463,52 @@ button {
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    const toggleButton = document.getElementById('toggleAddProductForm');
-    const formContainer = document.getElementById('addProductFormContainer');
-    const closeFormButton = document.getElementById('closeAddProductForm'); 
+    // Para el formulario de añadir producto
+    const toggleAddProductButton = document.getElementById('toggleAddProductForm');
+    const addProductFormContainer = document.getElementById('addProductFormContainer');
+    const closeAddProductFormButton = document.getElementById('closeAddProductForm'); 
 
-    toggleButton.addEventListener('click', function() {
-      if (formContainer.style.display === 'none' || formContainer.style.display === '') {
-        formContainer.style.display = 'block';
-        toggleButton.style.display = 'none'; // Ocultar el botón al mostrar el formulario
+    toggleAddProductButton.addEventListener('click', function() {
+      if (addProductFormContainer.style.display === 'none' || addProductFormContainer.style.display === '') {
+        addProductFormContainer.style.display = 'block';
+        toggleAddProductButton.style.display = 'none';
+        // Ocultar el formulario de editar empresa si está abierto
+        editCompanyFormContainer.style.display = 'none';
+        toggleEditCompanyButton.style.display = 'block';
       } else {
-        formContainer.style.display = 'none';
-        toggleButton.style.display = 'block'; // Mostrar el botón al ocultar el formulario
+        addProductFormContainer.style.display = 'none';
+        toggleAddProductButton.style.display = 'block';
       }
     });
 
-    closeFormButton.addEventListener('click', function() {
-      formContainer.style.display = 'none';
-      toggleButton.style.display = 'block'; // Mostrar el botón cuando se cierra el formulario
+    closeAddProductFormButton.addEventListener('click', function() {
+      addProductFormContainer.style.display = 'none';
+      toggleAddProductButton.style.display = 'block';
     });
+
+    // Para el formulario de editar empresa (NUEVO)
+    const toggleEditCompanyButton = document.getElementById('toggleEditCompanyForm');
+    const editCompanyFormContainer = document.getElementById('editCompanyFormContainer');
+    const closeEditCompanyFormButton = document.getElementById('closeEditCompanyForm');
+
+    toggleEditCompanyButton.addEventListener('click', function() {
+        if (editCompanyFormContainer.style.display === 'none' || editCompanyFormContainer.style.display === '') {
+            editCompanyFormContainer.style.display = 'block';
+            toggleEditCompanyButton.style.display = 'none';
+            // Ocultar el formulario de añadir producto si está abierto
+            addProductFormContainer.style.display = 'none';
+            toggleAddProductButton.style.display = 'block';
+        } else {
+            editCompanyFormContainer.style.display = 'none';
+            toggleEditCompanyButton.style.display = 'block';
+        }
+    });
+
+    closeEditCompanyFormButton.addEventListener('click', function() {
+        editCompanyFormContainer.style.display = 'none';
+        toggleEditCompanyButton.style.display = 'block';
+    });
+
 
     // Script para desvanecer mensajes flash
     const flashMessages = document.querySelectorAll('.flash');

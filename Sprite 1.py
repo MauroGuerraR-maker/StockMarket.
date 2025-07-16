@@ -383,6 +383,52 @@ def actualizar_cantidad_producto(producto_id):
         logging.error(f"Error al actualizar cantidad del producto '{producto_id}' para UID {uid}: {e}")
         return jsonify({'success': False, 'message': f'Error interno del servidor: {str(e)}'}), 500
 
+# --- NUEVA RUTA PARA EDITAR LA INFORMACIÓN DE LA EMPRESA ---
+@app.route('/editar_empresa', methods=['POST'])
+def editar_empresa():
+    if 'user' not in session:
+        return redirect(url_for("login"))
+    uid = session['user']['uid']
+
+    nombre_empresa = request.form.get('nombre_empresa')
+    nit = request.form.get('nit')
+    numero_contacto = request.form.get('numero_contacto')
+    direccion = request.form.get('direccion')
+    logo_empresa = request.files.get('logo_empresa')
+
+    if nombre_empresa and nit and numero_contacto and direccion:
+        empresa_data_update = {
+            "nombre_empresa": nombre_empresa,
+            "nit": nit,
+            "numero_contacto": numero_contacto,
+            "direccion": direccion
+        }
+
+        # Subir nuevo logo si se proporciona
+        if logo_empresa and logo_empresa.filename != '':
+            try:
+                upload_result = cloudinary.uploader.upload(logo_empresa)
+                empresa_data_update["logo_url"] = upload_result['secure_url']
+                logging.info(f"New company logo uploaded for UID: {uid}. URL: {upload_result['secure_url']}")
+            except Exception as e:
+                logging.error(f"Error uploading company logo for UID {uid}: {e}")
+                flash(f"Error al subir el nuevo logo: {str(e)}", "error")
+        
+        try:
+            db.reference(f'usuarios/{uid}/empresa').update(empresa_data_update)
+            # Actualizar el nombre de la empresa en la sesión si ha cambiado
+            session['user']['nombre_empresa'] = nombre_empresa
+            logging.info(f"Company information updated for UID: {uid}. Data: {empresa_data_update}")
+            flash("Información de la empresa actualizada correctamente.", "success")
+        except Exception as e:
+            logging.error(f"Error updating company information for UID {uid}: {e}")
+            flash(f"Error al actualizar la información de la empresa: {str(e)}", "error")
+    else:
+        logging.warning(f"Invalid company data provided for update for UID: {uid}. Data: {request.form}")
+        flash("Por favor, rellena todos los campos obligatorios para actualizar la información de la empresa.", "error")
+
+    return redirect(url_for("inventario"))
+
 @app.route('/logout')
 def logout():
     """ Cierra la sesión """
