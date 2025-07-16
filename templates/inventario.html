@@ -2,25 +2,48 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<title>Inventario - {{ perfil }}</title>
+<title>Inventario - {{ perfil_data.nombre_empresa | default('Tu Empresa') }}</title>
 <style>
-body {
-  background-color: #ADD8E6;
-  background-image: none;
-  background-size: cover;
-  background-position: center;
+/* Reset básico y variables */
+:root {
+  --primary-color: #e6f0ff;
+  --accent-color: #007bff;
+  --text-color: #333;
+  --border-radius: 12px;
+}
+* {
+  box-sizing: border-box;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
   padding: 0;
-  color: #333;
 }
+
+body {
+  background-color: #ADD8E6; /* Light Blue background */
+  background-image: none; /* Asegúrate de que no haya imagen de fondo estática */
+  color: var(--text-color);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Alinea al inicio del eje transversal */
+  min-height: 100vh; /* Asegura que ocupe al menos toda la altura de la ventana */
+  padding: 40px 20px; /* Padding general para el cuerpo */
+  margin: 0;
+  position: relative; /* Necesario para el posicionamiento de .background-shapes */
+  overflow: hidden; /* Oculta el scroll si las formas se salen */
+}
+
+/* Estilos para el contenedor principal */
 .container {
-  background-color: rgba(255,255,255,0.95);
-  margin: 50px auto;
-  padding: 30px;
-  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.97);
+  margin: 0 auto; /* Centrar horizontalmente */
+  padding: 30px 40px;
+  border-radius: 15px;
   max-width: 900px;
-  color: #333;
+  width: 100%;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  position: relative; /* Necesario para que el contenido esté sobre el fondo */
+  z-index: 1; /* Asegura que esté por encima de las formas de fondo */
+  text-align: center; /* Centra el texto por defecto */
 }
 
 .header-main {
@@ -28,6 +51,7 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    flex-wrap: wrap; /* Permite que los elementos se envuelvan en pantallas pequeñas */
 }
 
 .header-main h2 {
@@ -45,184 +69,243 @@ body {
   padding: 15px;
   border: 1px solid #e0e0e0;
   border-radius: 10px;
-  background-color: #fff;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  background-color: #f0f8ff; /* Fondo más claro para la info de la empresa */
+  width: 100%; /* Ocupa todo el ancho disponible */
+  position: relative; /* Para posicionar el botón de editar logo */
+}
+
+/* Contenedor del logo y botón de edición */
+.logo-container {
+    position: relative;
+    width: 80px; /* Tamaño fijo para el contenedor del logo */
+    height: 80px;
+    border-radius: 50%; /* Para logos circulares */
+    overflow: hidden; /* Recorta la imagen si es demasiado grande */
+    margin-right: 20px;
+    flex-shrink: 0; /* Evita que el contenedor del logo se encoja */
 }
 
 .company-logo {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  overflow: hidden;
-  margin-right: 20px;
-  border: 2px solid #007bff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.company-logo img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover; /* Asegura que la imagen cubra el área sin distorsionarse */
+  border-radius: 50%;
+  transition: opacity 0.3s ease;
 }
 
-.company-details {
-  flex-grow: 1;
-}
-
-.company-details p {
-  margin: 4px 0;
-  font-size: 0.95em;
-  color: #555;
-}
-
-.company-details p strong {
-  color: #333;
-}
-
-.producto {
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  padding: 15px;
-  margin: 15px 0;
-  background-color: #f9f9f9;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap: 20px; /* Espacio entre la info y el carrusel */
-}
-.producto h3 {
-  margin: 0;
-  color: #007bff;
-}
-.producto p {
-  margin: 4px 0;
-}
-.toggle-form-btn {
-  padding: 8px 18px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.95em;
-  transition: background-color 0.3s ease;
-  font-family: inherit;
-}
-
-.toggle-form-btn:hover {
-  background-color: #0056b3;
-}
-
-.add-product-form-container {
-  display: none;
-  border: 1px solid #e0e0e0;
-  padding: 20px;
-  border-radius: 10px;
-  background-color: #fff;
-  margin-top: 20px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-.add-product-form-container h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-}
-
-form {
-  margin-top: 10px;
-  display: block;
-}
-input, textarea {
-  width: calc(100% - 22px);
-  padding: 10px;
-  margin: 8px 0 15px 0;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  box-sizing: border-box;
-  font-family: inherit;
-}
-label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-    color: #555;
-}
-button {
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-top: 10px;
-}
-.delete-btn {
-  background-color: #dc3545;
-  margin-left: 10px;
-}
-.logout {
-  display: inline-block;
-  margin-top: 20px;
-  padding: 10px 20px;
-  background-color: #6c757d;
-  color: white;
-  text-decoration: none;
-  border-radius: 8px;
-}
-.logout:hover {
-  background-color: #5a6268;
-}
-.flash {
-  padding: 10px;
-  margin-bottom: 15px;
-  border-radius: 5px;
-  opacity: 1;
-  transition: opacity 0.5s ease-out;
-}
-
-.flash.hidden {
-    opacity: 0;
-}
-
-.flash-success {
-  background-color: #d4edda;
-  color: #155724;
-}
-.flash-error {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-/* --- Estilos para el Carrusel (Tamaño Aumentado) --- */
-.carousel-container {
-    position: relative;
-    width: 300px; /* Ancho aumentado */
-    height: 225px; /* Alto aumentado (manteniendo 4:3) */
-    overflow: hidden;
-    border-radius: 8px;
-    background-color: #e0e0e0;
+/* Botón flotante para cambiar logo */
+.change-logo-btn {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
     display: flex;
     justify-content: center;
     align-items: center;
-    flex-shrink: 0;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 0.8em;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.logo-container:hover .change-logo-btn {
+    opacity: 1;
+}
+
+.company-info h2 {
+  margin: 0; /* Eliminar margen del h2 dentro de company-info */
+}
+
+.header-buttons {
+    display: flex;
+    gap: 10px; /* Espacio entre los botones */
+    margin-top: 10px; /* Espacio si se envuelven */
+}
+
+.btn {
+  background-color: var(--accent-color);
+  color: #fff;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none; /* Para enlaces que parecen botones */
+  display: inline-block;
+  text-align: center;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #0056b3;
+}
+
+.logout-btn {
+    background-color: #dc3545; /* Rojo para cerrar sesión */
+}
+.logout-btn:hover {
+    background-color: #c82333;
+}
+
+.edit-profile-btn {
+    background-color: #28a745; /* Un verde para editar */
+}
+.edit-profile-btn:hover {
+    background-color: #218838;
+}
+
+h3 {
+  color: #007bff;
+  margin-top: 20px;
+  margin-bottom: 15px;
+}
+.producto-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+.producto {
+  border: 1px solid #e0e0e0;
+  border-radius: 15px;
+  padding: 20px;
+  background-color: #fdfdfd;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden; /* Para las imágenes */
+}
+.producto h3 {
+  margin: 0 0 10px 0;
+  color: #0056b3;
+  font-size: 1.3em;
+}
+.producto p {
+  margin: 5px 0;
+  font-size: 0.95em;
+  color: #555;
+}
+.producto strong {
+    color: #000;
+}
+
+.producto-details {
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.quantity-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    width: 100%; /* Ocupa el 100% del ancho del producto */
+}
+.quantity-control input {
+    width: 60px; /* Ancho más pequeño para la cantidad */
+    text-align: center;
+    margin: 0 5px;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    -moz-appearance: textfield; /* Para Firefox */
+}
+.quantity-control input::-webkit-outer-spin-button,
+.quantity-control input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.quantity-control button {
+    background-color: #6c757d; /* Gris para botones de cantidad */
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s ease;
+}
+.quantity-control button:hover {
+    background-color: #5a6268;
+}
+
+
+.producto-actions {
+    margin-top: 15px;
+    width: 100%;
+}
+.producto-actions form {
+    display: inline-block;
+    margin: 0 5px;
+}
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.delete-btn:hover {
+  background-color: #c82333;
+}
+.edit-btn {
+  background-color: #17a2b8; /* Cyan para editar producto */
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.edit-btn:hover {
+  background-color: #138496;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="file"],
+textarea {
+  width: calc(100% - 20px);
+  padding: 10px;
+  margin: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  resize: vertical;
+}
+
+/* Estilos para el carrusel de imágenes */
+.carousel-container {
+    width: 100%;
+    max-width: 200px; /* Ajusta esto según el tamaño deseado de tus imágenes */
+    height: auto;
+    margin: 0 auto 15px auto;
+    overflow: hidden;
+    position: relative;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
 }
 
 .carousel-images {
     display: flex;
     transition: transform 0.5s ease-in-out;
-    width: 100%;
-    height: 100%;
 }
 
 .carousel-images img {
     width: 100%;
-    height: 100%;
-    object-fit: cover; /* Mantiene la imagen cubriendo el espacio, puede cortar bordes si la proporción no coincide */
-    flex-shrink: 0;
-    border-radius: 8px;
+    height: auto;
+    display: block;
+    object-fit: contain; /* Ajustar imagen dentro del contenedor */
 }
 
 .carousel-button {
@@ -234,321 +317,329 @@ button {
     border: none;
     padding: 8px 12px;
     cursor: pointer;
-    border-radius: 50%;
     font-size: 1.2em;
-    z-index: 10;
-    line-height: 1;
+    border-radius: 5px;
+    z-index: 2; /* Asegura que los botones estén por encima de las imágenes */
 }
 
-.carousel-button.prev {
+.carousel-button.left {
     left: 5px;
 }
 
-.carousel-button.next {
+.carousel-button.right {
     right: 5px;
 }
 
-.carousel-button:hover {
-    background-color: rgba(0, 0, 0, 0.8);
-}
-
-.no-images-placeholder {
-    color: #666;
+/* Flash messages */
+.flash-message {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    text-align: center;
     font-size: 0.9em;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
+    transition: opacity 0.5s ease-out;
+}
+.flash-message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+.flash-message.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+.flash-message.hidden {
+    opacity: 0;
+    pointer-events: none;
 }
 
-/* Estilos para el buscador */
-.search-bar-container {
-    margin-bottom: 20px;
-    padding: 15px;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    background-color: #fff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    display: flex;
-    align-items: center;
-    gap: 10px;
+/* --- ESTILOS AGREGADOS PARA EL FONDO ALEATORIO --- */
+.background-shapes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
 }
-.search-bar-container input[type="text"] {
-    flex-grow: 1;
-    margin: 0; /* Override default input margin */
+.shape {
+  position: absolute;
+  opacity: 0;
+  animation: fade-in 2s forwards, move-randomly 15s infinite alternate ease-in-out, rotate 20s infinite linear;
+  filter: blur(5px);
 }
-
-/* Estilos para la edición de cantidad */
-.quantity-input {
-    width: 80px; /* Ajusta el ancho según necesidad */
-    padding: 5px;
-    margin-right: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    text-align: center;
-    -moz-appearance: textfield; /* Elimina flechas en Firefox */
+.circle {
+  border-radius: 50%;
 }
-/* Elimina flechas en navegadores Webkit (Chrome, Safari) */
-.quantity-input::-webkit-outer-spin-button,
-.quantity-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+.square {}
+.triangle {
+  width: 0;
+  height: 0;
+  border-left: 50px solid transparent;
+  border-right: 50px solid transparent;
+  border-bottom: 100px solid;
 }
-.save-quantity-btn {
-    padding: 6px 12px;
-    background-color: #28a745; /* Verde para guardar */
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.85em;
-    transition: background-color 0.3s ease;
-    font-family: inherit;
-    margin-left: 5px; /* Espacio con el input */
+@keyframes fade-in {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 0.2; transform: scale(1); }
 }
-.save-quantity-btn:hover {
-    background-color: #218838;
+@keyframes move-randomly {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(100px, -50px); }
+  50% { transform: translate(-80px, 120px); }
+  75% { transform: translate(60px, -90px); }
+  100% { transform: translate(0, 0); }
 }
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+/* --- FIN DE ESTILOS AGREGADOS --- */
 
 </style>
 </head>
 <body>
-<div class="container">
-  <div class="header-main">
-    <h2>Inventario de {{ perfil }}</h2>
-    <button id="toggleAddProductForm" class="toggle-form-btn">Añadir Nuevo Producto</button>
-  </div>
+  <div id="backgroundShapes" class="background-shapes"></div>
 
-  <div class="company-info">
-    <div class="company-logo">
-      {% if empresa_info.logo_url %}
-        <img src="{{ empresa_info.logo_url }}" alt="Logo de la Empresa">
-      {% else %}
-        <img src="https://via.placeholder.com/80?text=Logo" alt="Logo por defecto">
-      {% endif %}
-    </div>
-    <div class="company-details">
-      <p><strong>Nombre de la Empresa:</strong> {{ empresa_info.nombre_empresa }}</p>
-      <p><strong>NIT:</strong> {{ empresa_info.nit }}</p>
-      <p><strong>Contacto:</strong> {{ empresa_info.numero_contacto }}</p>
-      <p><strong>Dirección:</strong> {{ empresa_info.direccion }}</p>
-    </div>
-  </div>
-
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, message in messages %}
-        <div class="flash flash-{{ category }}">
-            {{ message }}
+  <div class="container">
+    <div class="header-main">
+        <div class="company-info">
+            <div class="logo-container">
+                {% if perfil_data.logo_url %}
+                    <img src="{{ perfil_data.logo_url }}" alt="Logo Empresa" class="company-logo">
+                {% else %}
+                    <img src="https://via.placeholder.com/80?text=Logo" alt="Logo de empresa" class="company-logo">
+                {% endif %}
+                <a href="{{ url_for('editar_perfil') }}" class="change-logo-btn">Cambiar Logo</a>
+            </div>
+            <h2>Inventario de {{ perfil_data.nombre_empresa | default('Tu Empresa') }}</h2>
         </div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
+        <div class="header-buttons">
+            <a href="{{ url_for('editar_perfil') }}" class="btn edit-profile-btn">Editar Perfil</a>
+            <a href="{{ url_for('logout') }}" class="btn logout-btn">Cerrar Sesión</a>
+        </div>
+    </div>
 
-  <div id="addProductFormContainer" class="add-product-form-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash-message {{ category }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <h3>Tus Productos</h3>
+    {% if productos %}
+      <div class="producto-grid">
+        {% for id, p in productos.items() %}
+          <div class="producto">
+            <h3>{{ p.nombre }}</h3>
+            <div class="producto-details">
+                <p><strong>Descripción:</strong> {{ p.descripcion }}</p>
+                <p><strong>Precio:</strong> ${{ "%.2f"|format(p.precio) }}</p>
+            </div>
+
+            {% if p.imagen_urls %}
+                <div class="carousel-container" id="carousel-{{ id }}">
+                    <div class="carousel-images" style="width: {{ p.imagen_urls|length * 100 }}%;">
+                        {% for img_url in p.imagen_urls %}
+                            <img src="{{ img_url }}" alt="{{ p.nombre }} - Imagen {{ loop.index }}">
+                        {% endfor %}
+                    </div>
+                    {% if p.imagen_urls|length > 1 %}
+                        <button class="carousel-button left" onclick="moveCarousel('{{ id }}', -1)">&#10094;</button>
+                        <button class="carousel-button right" onclick="moveCarousel('{{ id }}', 1)">&#10095;</button>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="carousel-container">
+                    <img src="https://via.placeholder.com/200?text=Sin+Imagen" alt="Sin Imagen">
+                </div>
+            {% endif %}
+
+            <div class="quantity-control">
+                <button type="button" class="decrease-quantity" data-product-id="{{ id }}">-</button>
+                <input type="number" value="{{ p.cantidad }}" class="product-quantity-input" data-product-id="{{ id }}" min="0">
+                <button type="button" class="increase-quantity" data-product-id="{{ id }}">+</button>
+            </div>
+            <p><strong>Stock Actual:</strong> <span id="current-quantity-{{ id }}">{{ p.cantidad }}</span></p>
+
+
+            <div class="producto-actions">
+              <form action="{{ url_for('eliminar_producto', producto_id=id) }}" method="POST">
+                <button type="submit" class="delete-btn">Eliminar</button>
+              </form>
+              <form action="{{ url_for('editar_producto', producto_id=id) }}" method="GET">
+                <button type="submit" class="edit-btn">Editar</button>
+              </form>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>No hay productos registrados. ¡Comienza agregando uno!</p>
+    {% endif %}
+
     <h3>Agregar nuevo producto</h3>
     <form method="POST" action="{{ url_for('agregar_producto') }}" enctype="multipart/form-data">
-      <label for="nombre_producto">Nombre del producto:</label>
-      <input type="text" name="nombre" id="nombre_producto" placeholder="Nombre del producto" required />
-
-      <label for="descripcion_producto">Descripción:</label>
-      <textarea name="descripcion" id="descripcion_producto" placeholder="Descripción" rows="2"></textarea>
-
-      <label for="cantidad_producto">Cantidad:</label>
-      <input type="number" name="cantidad" id="cantidad_producto" placeholder="Cantidad" required />
-
-      <label for="precio_producto">Precio:</label>
-      <input type="number" step="0.01" name="precio" id="precio_producto" placeholder="Precio" required />
-
-      <label for="imagen_producto">Subir Imagen(es) de Producto (opcional):</label>
-      <input type="file" name="imagen" id="imagen_producto" multiple>
-      
-      <button type="submit">Agregar Producto</button>
-      <button type="button" id="closeAddProductForm" style="background-color: #6c757d; margin-left: 10px;">Cerrar</button>
+        <input type="text" name="nombre" placeholder="Nombre del producto" required />
+        <textarea name="descripcion" placeholder="Descripción" rows="2"></textarea>
+        <input type="number" name="cantidad" placeholder="Cantidad" required />
+        <input type="number" step="0.01" name="precio" placeholder="Precio" required />
+        <label for="imagen">Imágenes del producto (múltiples opcionales):</label>
+        <input type="file" name="imagen" id="imagen" multiple accept="image/*">
+        <button type="submit" class="btn">Agregar Producto</button>
     </form>
   </div>
 
-  <h3>Productos Registrados</h3>
-
-  <div class="search-bar-container">
-    <input type="text" id="productSearchInput" placeholder="Buscar productos por nombre o descripción..." />
-  </div>
-  <div id="productosList"> {# Añadimos un div para envolver los productos y facilitar el filtrado #}
-  {% if productos %}
-    {% for id, p in productos.items() %}
-      <div class="producto" data-nombre="{{ p.nombre | lower }}" data-descripcion="{{ p.descripcion | lower }}">
-        <div>
-          <h3>{{ p.nombre }}</h3>
-          <p><strong>Descripción:</strong> {{ p.descripcion }}</p>
-          <p>
-            <strong>Cantidad:</strong> 
-            <input type="number" class="quantity-input" value="{{ p.cantidad }}" min="0" data-product-id="{{ id }}" />
-            <button class="save-quantity-btn" data-product-id="{{ id }}">Guardar Cantidad</button>
-          </p>
-          <p><strong>Precio:</strong> COP
-          {% set formatted_price = "{:,.2f}".format(p.precio) %}
-          {% set euro_style_price = formatted_price | replace(',', '_TEMP_COMMA_') | replace('.', ',') | replace('_TEMP_COMMA_', '.') %}
-          {% if euro_style_price.endswith(',00') %}
-              {{ euro_style_price | truncate(euro_style_price | length - 3, True, '') }}
-          {% else %}
-              {{ euro_style_price }}
-          {% endif %}
-          </p>
-          <form action="{{ url_for('eliminar_producto', producto_id=id) }}" method="POST" style="display:inline;">
-            <button type="submit" class="delete-btn">Eliminar</button>
-          </form>
-          <form action="{{ url_for('editar_producto', producto_id=id) }}" method="GET" style="display:inline;">
-            <button type="submit" style="background-color:#17a2b8">Editar</button>
-          </form>
-        </div>
-        
-        <div class="carousel-container" id="carousel-{{ id }}">
-            <div class="carousel-images">
-                {# Prioriza 'imagenes' (lista), luego 'imagen_url' (single), sino placeholder #}
-                {% set all_product_images = p.imagenes if p.imagenes is defined and p.imagenes else ([p.imagen_url] if p.imagen_url is defined and p.imagen_url else []) %}
-                {% if all_product_images %}
-                    {% for img_url in all_product_images %}
-                        <img src="{{ img_url }}" alt="Imagen de Producto {{ loop.index }}">
-                    {% endfor %}
-                {% else %}
-                    <p class="no-images-placeholder">No hay imágenes disponibles</p>
-                {% endif %}
-            </div>
-            {% if all_product_images | length > 1 %}
-                <button class="carousel-button prev" onclick="moveCarousel('{{ id }}', -1)">&#10094;</button>
-                <button class="carousel-button next" onclick="moveCarousel('{{ id }}', 1)">&#10095;</button>
-            {% endif %}
-        </div>
-        </div>
-
-    {% endfor %}
-  {% else %}
-    <p>No hay productos registrados.</p>
-  {% endif %}
-  </div> {# Cierre del div productosList #}
-
-  <a class="logout" href="{{ url_for('logout') }}">Cerrar sesión</a>
-</div>
-
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const toggleButton = document.getElementById('toggleAddProductForm');
-    const formContainer = document.getElementById('addProductFormContainer');
-    const closeFormButton = document.getElementById('closeAddProductForm'); 
-
-    toggleButton.addEventListener('click', function() {
-      if (formContainer.style.display === 'none' || formContainer.style.display === '') {
-        formContainer.style.display = 'block';
-        toggleButton.style.display = 'none'; // Ocultar el botón al mostrar el formulario
-      } else {
-        formContainer.style.display = 'none';
-        toggleButton.style.display = 'block'; // Mostrar el botón al ocultar el formulario
-      }
+  document.addEventListener('DOMContentLoaded', () => {
+    // --- Funcionalidad de Guardar Cantidad ---
+    document.querySelectorAll('.increase-quantity').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.dataset.productId;
+            const input = document.querySelector(`.product-quantity-input[data-product-id="${productId}"]`);
+            input.value = parseInt(input.value) + 1;
+            updateQuantity(productId, input.value);
+        });
     });
 
-    closeFormButton.addEventListener('click', function() {
-      formContainer.style.display = 'none';
-      toggleButton.style.display = 'block'; // Mostrar el botón cuando se cierra el formulario
-    });
-
-    // Script para desvanecer mensajes flash
-    const flashMessages = document.querySelectorAll('.flash');
-    flashMessages.forEach(message => {
-        setTimeout(() => {
-            message.classList.add('hidden'); // Añade clase para iniciar la transición
-            message.addEventListener('transitionend', () => {
-                message.remove(); // Elimina el elemento del DOM después de la transición
-            });
-        }, 3000); // 3000 milisegundos = 3 segundos
-    });
-
-    // --- Funcionalidad del Buscador ---
-    const searchInput = document.getElementById('productSearchInput');
-    const productosList = document.getElementById('productosList');
-    const productos = productosList.querySelectorAll('.producto'); // Obtener todos los elementos de producto
-
-    searchInput.addEventListener('keyup', function() {
-        const searchTerm = searchInput.value.toLowerCase(); // Convertir a minúsculas para búsqueda sin distinción
-        
-        productos.forEach(producto => {
-            const nombre = producto.dataset.nombre; // Obtener nombre del data-atributo
-            const descripcion = producto.dataset.descripcion; // Obtener descripción del data-atributo
-
-            if (nombre.includes(searchTerm) || descripcion.includes(searchTerm)) {
-                producto.style.display = 'flex'; // Mostrar el producto
-            } else {
-                producto.style.display = 'none'; // Ocultar el producto
+    document.querySelectorAll('.decrease-quantity').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.dataset.productId;
+            const input = document.querySelector(`.product-quantity-input[data-product-id="${productId}"]`);
+            const currentValue = parseInt(input.value);
+            if (currentValue > 0) {
+                input.value = currentValue - 1;
+                updateQuantity(productId, input.value);
             }
         });
     });
-    // --- Fin Funcionalidad del Buscador ---
 
-    // --- Funcionalidad de Guardar Cantidad ---
-    const saveQuantityButtons = document.querySelectorAll('.save-quantity-btn');
-    saveQuantityButtons.forEach(button => {
-        button.addEventListener('click', function() {
+    document.querySelectorAll('.product-quantity-input').forEach(input => {
+        input.addEventListener('change', function() {
             const productId = this.dataset.productId;
-            const quantityInput = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
-            const newQuantity = quantityInput.value;
-
-            // Enviar la nueva cantidad al servidor
-            fetch(`/actualizar_cantidad_producto/${productId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ cantidad: newQuantity })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Cantidad actualizada correctamente.');
-                    // Opcional: Actualizar la página o solo el valor en la UI si no se recarga
-                    // location.reload(); 
-                } else {
-                    alert('Error al actualizar la cantidad: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error de conexión al actualizar la cantidad.');
-            });
+            updateQuantity(productId, this.value);
         });
     });
+
+    function updateQuantity(productId, newQuantity) {
+        fetch(`/actualizar_cantidad/${productId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ cantidad: newQuantity })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById(`current-quantity-${productId}`).innerText = newQuantity;
+                // No mostrar flash message si es una actualización simple de cantidad
+            } else {
+                alert('Error al actualizar la cantidad: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error de conexión al actualizar la cantidad.');
+        });
+    }
     // --- Fin Funcionalidad de Guardar Cantidad ---
+
+    // --- Funcionalidad del Carrusel ---
+    const carouselStates = {};
+
+    function moveCarousel(productId, direction) {
+        const carouselContainer = document.getElementById(`carousel-${productId}`);
+        const carouselImagesWrapper = carouselContainer.querySelector('.carousel-images');
+        const images = carouselImagesWrapper.querySelectorAll('img');
+
+        if (images.length === 0) return;
+
+        if (!carouselStates[productId]) {
+            carouselStates[productId] = 0;
+        }
+
+        let currentIndex = carouselStates[productId];
+        let newIndex = currentIndex + direction;
+
+        if (newIndex < 0) {
+            newIndex = images.length - 1;
+        } else if (newIndex >= images.length) {
+            newIndex = 0;
+        }
+
+        carouselImagesWrapper.style.transform = `translateX(${-newIndex * 100}%)`;
+        carouselStates[productId] = newIndex;
+    }
+
+    // Exportar la función para que sea accesible globalmente (desde onclick en HTML)
+    window.moveCarousel = moveCarousel;
+    // --- Fin Funcionalidad del Carrusel ---
+
+    // Script para desvanecer mensajes flash
+    const flashMessages = document.querySelectorAll('.flash-message');
+    flashMessages.forEach(message => {
+        setTimeout(() => {
+            message.classList.add('hidden');
+            message.addEventListener('transitionend', () => {
+                message.remove();
+            });
+        }, 4000); // El mensaje desaparece después de 4 segundos
+    });
+
+    // --- Script para generar las formas aleatorias (copia de index2.html) ---
+    const backgroundShapes = document.getElementById('backgroundShapes');
+    const shapes = ['circle', 'square', 'triangle'];
+    const colors = ['#7EB3FF', '#5A8FCF', '#3A6BA5', '#8AB8FE', '#4A7FC8', '#6AA0E0'];
+    
+    // Crear 15 figuras geométricas
+    for (let i = 0; i < 15; i++) {
+      const shape = document.createElement('div');
+      const shapeType = shapes[Math.floor(Math.random() * shapes.length)];
+      
+      shape.className = `shape ${shapeType}`;
+      
+      // Tamaño aleatorio
+      const size = Math.floor(Math.random() * 200) + 100;
+      
+      // Posición aleatoria
+      const posX = Math.random() * 100;
+      const posY = Math.random() * 100;
+      
+      // Color aleatorio
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      
+      // Estilos comunes
+      shape.style.width = `${size}px`;
+      shape.style.height = `${size}px`;
+      shape.style.left = `${posX}%`;
+      shape.style.top = `${posY}%`;
+      shape.style.backgroundColor = color;
+      
+      // Estilos específicos para triángulos
+      if (shapeType === 'triangle') {
+        shape.style.width = '0';
+        shape.style.height = '0';
+        shape.style.borderLeft = `${size / 2}px solid transparent`;
+        shape.style.borderRight = `${size / 2}px solid transparent`;
+        shape.style.borderBottom = `${size}px solid ${color}`;
+        shape.style.backgroundColor = 'transparent';
+      }
+
+      // Tiempo de retardo para la animación inicial
+      shape.style.animationDelay = `${Math.random() * 2}s`;
+      
+      backgroundShapes.appendChild(shape);
+    }
+    // --- FIN Script para generar las formas aleatorias ---
   });
-
-  // --- Funcionalidad del Carrusel ---
-  // Objeto para almacenar el índice de imagen actual para cada carrusel
-  const carouselStates = {};
-
-  function moveCarousel(productId, direction) {
-      const carouselContainer = document.getElementById(`carousel-${productId}`);
-      const carouselImagesWrapper = carouselContainer.querySelector('.carousel-images');
-      const images = carouselImagesWrapper.querySelectorAll('img');
-
-      if (images.length === 0) return; // No hay imágenes para mover
-
-      if (!carouselStates[productId]) {
-          carouselStates[productId] = 0; // Inicializar si no existe
-      }
-
-      let currentIndex = carouselStates[productId];
-      let newIndex = currentIndex + direction;
-
-      // Lógica para que el carrusel sea infinito
-      if (newIndex < 0) {
-          newIndex = images.length - 1;
-      } else if (newIndex >= images.length) {
-          newIndex = 0;
-      }
-
-      carouselImagesWrapper.style.transform = `translateX(${-newIndex * 100}%)`;
-      carouselStates[productId] = newIndex;
-  }
-  // --- Fin Funcionalidad del Carrusel ---
 </script>
 </body>
 </html>
